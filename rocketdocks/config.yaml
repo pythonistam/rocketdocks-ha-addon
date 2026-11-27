@@ -1,5 +1,5 @@
 name: RocketDocks
-version: "1.0.0"
+version: "1.0.1"
 slug: rocketdocks
 description: Панель RocketDocks с компьютера прямо в Home Assistant (просмотр и управление)
 url: https://github.com/pythonistam/rocketdocks-ha-addon
