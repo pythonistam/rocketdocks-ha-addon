@@ -1,0 +1,31 @@
+name: RocketDocks
+version: "1.0.0"
+slug: rocketdocks
+description: Панель RocketDocks с компьютера прямо в Home Assistant (просмотр и управление)
+url: https://github.com/pythonistam/rocketdocks-ha-addon
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+startup: application
+boot: auto
+ingress: true
+ingress_port: 8099
+ingress_stream: true
+panel_icon: mdi:dock-bottom
+panel_title: RocketDocks
+options:
+  host: ""
+  port: 8790
+  key: ""
+  theme: dark
+  labels: false
+  size: 0
+schema:
+  host: str
+  port: port
+  key: password
+  theme: list(dark|light|transparent)
+  labels: bool
+  size: int(0,512)

@@ -1,0 +1,19 @@
+configuration:
+  host:
+    name: Computer address
+    description: IP address or name of the PC running RocketDocks (e.g. 192.168.31.50)
+  port:
+    name: Port
+    description: RocketDocks web panel port (default 8790)
+  key:
+    name: Access key
+    description: Key from RocketDocks (Panel settings -> Web panel), 32 characters
+  theme:
+    name: Page theme
+    description: dark, light or transparent background
+  labels:
+    name: Icon labels
+    description: Show titles under icons
+  size:
+    name: Cell size, px
+    description: 0 means the same as on the computer

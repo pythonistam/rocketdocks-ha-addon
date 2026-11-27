@@ -1,0 +1,19 @@
+configuration:
+  host:
+    name: Адрес компьютера
+    description: IP-адрес или имя ПК, где запущен RocketDocks (например 192.168.31.50)
+  port:
+    name: Порт
+    description: Порт веб-панели RocketDocks (по умолчанию 8790)
+  key:
+    name: Ключ доступа
+    description: Ключ из RocketDocks (Настройка панели -> Веб-панель), 32 символа
+  theme:
+    name: Тема страницы
+    description: dark — тёмная, light — светлая, transparent — прозрачный фон
+  labels:
+    name: Подписи значков
+    description: Показывать названия под значками
+  size:
+    name: Размер клетки, px
+    description: 0 — как на компьютере
