@@ -7,3 +7,10 @@ RocketDocks с Windows-компьютера в боковом меню HA (Ingre
 добавить `https://github.com/pythonistam/rocketdocks-ha-addon` -> установить **RocketDocks**.
 
 Подробности — [rocketdocks/DOCS.md](rocketdocks/DOCS.md).
+
+## Обновления
+
+Каждый push в `main`, меняющий `rocketdocks/`, запускает `.github/workflows/release.yml`: версия в
+`rocketdocks/config.yaml` повышается (patch), в `CHANGELOG.md` добавляется запись, ставится тег `vX.Y.Z`.
+Home Assistant видит новую версию и предлагает обновление; при включённом автообновлении ставит его сам.
+Бот коммитит в `main`, поэтому перед своей правкой делайте `git pull`.

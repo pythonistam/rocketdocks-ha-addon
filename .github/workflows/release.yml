@@ -1,0 +1,93 @@
+name: Release
+
+# Любое изменение аддона в main -> повысить версию в rocketdocks/config.yaml,
+# записать в CHANGELOG.md и поставить тег vX.Y.Z. Home Assistant (Supervisor)
+# раз в несколько часов перечитывает репозиторий, видит новую версию и
+# предлагает обновление (или ставит сам, если у аддона включено автообновление).
+# Аддон собирается на стороне HA из Dockerfile, поэтому образы не публикуются.
+# Пропустить выпуск: [skip release] в сообщении коммита.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - rocketdocks/**
+      - "!rocketdocks/config.yaml"
+      - "!rocketdocks/CHANGELOG.md"
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Какую часть версии повысить
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ !contains(github.event.head_commit.message, '[skip release]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: frenck/action-addon-linter@v2
+        with:
+          path: ./rocketdocks
+
+      - name: Повысить версию
+        id: ver
+        env:
+          BUMP: ${{ inputs.bump || 'patch' }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          cfg=rocketdocks/config.yaml
+          cur=$(sed -nE 's/^version: *"?([0-9]+\.[0-9]+\.[0-9]+)"?.*/\1/p' "$cfg")
+          IFS=. read -r ma mi pa <<< "$cur"
+          case "$BUMP" in
+            major) ma=$((ma+1)); mi=0; pa=0 ;;
+            minor) mi=$((mi+1)); pa=0 ;;
+            *)     pa=$((pa+1)) ;;
+          esac
+          new="$ma.$mi.$pa"
+          sed -i -E "s/^version: .*/version: \"$new\"/" "$cfg"
+
+          # Изменения выпуска — заголовки коммитов с прошлого push (без служебных).
+          if [[ -n "${BEFORE:-}" && "$BEFORE" != 0000000000000000000000000000000000000000 ]] && git cat-file -e "$BEFORE" 2>/dev/null; then
+            range="$BEFORE..HEAD"
+          else
+            range="HEAD~1..HEAD"
+          fi
+          notes=$(git log --no-merges --format='- %s' "$range" -- rocketdocks | grep -v 'chore(release)' || true)
+          [[ -z "$notes" ]] && notes="- Обновление"
+
+          log=rocketdocks/CHANGELOG.md
+          { echo "# Changelog"; echo; echo "## $new"; echo "$notes"; tail -n +2 "$log"; } > "$log.new"
+          mv "$log.new" "$log"
+
+          echo "version=$new" >> "$GITHUB_OUTPUT"
+          echo "Версия: $cur -> $new"
+
+      - name: Коммит и тег
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rocketdocks/config.yaml rocketdocks/CHANGELOG.md
+          git commit -m "chore(release): v$VERSION [skip release]"
+          git tag "v$VERSION"
+          for i in 1 2 3 4; do
+            git pull --rebase origin main && git push origin HEAD:main --tags && exit 0
+            sleep $((2**i))
+          done
+          exit 1
